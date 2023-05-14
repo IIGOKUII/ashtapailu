@@ -1,5 +1,5 @@
 from tkinter import *
-from methods import get_new_entry, get_short_plan, get_complete_plan, get_mold_info, get_mold_info, plan_by_mold, submit_entry
+from methods import get_new_entry, get_short_plan, get_complete_plan, delete_plan, get_mold_info, plan_by_mold, submit_entry, re_plan
 from tkinter import ttk
 from tkinter import messagebox
 import sqlite3
@@ -140,11 +140,6 @@ class Planning(Toplevel):
             except IndexError:
                 arg.set('Select Designer')
 
-        # Date Entry widget function
-        def open_cal(event, arg):
-            self.cal_date.set(arg.entry.get())
-            get_designers()
-
         def submit_one():
             print(self.Y_var.get(), self.N_var.get())
             blank_check = (self.Activity_var, self.Activity_day, self.Activity_start_date.entry, self.Activity_designer)
@@ -249,14 +244,18 @@ class Planning(Toplevel):
             result = result.reindex(names)
 
             # create a new figure and axis object
-            fig, ax = plt.subplots(figsize=(screen_width/100, screen_height/100))
-
-            sns.heatmap(result, annot=True, fmt=".1f", vmin=0, vmax=3, cmap="YlGnBu", center=1.5, ax=ax)
-            plt.show()
+            # fig, ax = plt.subplots(figsize=(screen_width/100, screen_height/100))
+            #
+            # sns.heatmap(result, annot=True, fmt=".1f", vmin=0, vmax=3, cmap="YlGnBu", center=1.5, ax=ax)
+            # plt.show()
 
         def reset_var():
-            self.difficulty.set('')
-            self.DegnModel.set('')
+            self.Activity_var.set('')
+            self.Y_var.set(0)
+            self.N_var.set(0)
+            self.Activity_day.set('')
+            self.Activity_end.set('')
+            self.Activity_designer.set('')
 
         def refresh():
             data_1 = get_new_entry(self.MDShdb)
@@ -331,22 +330,38 @@ class Planning(Toplevel):
             self.difficulty.set(df_mold_info.at[0, 'DIFFICULTY'])
 
             # Label of mold information
-            self.mold_no_label = ttk.Label(self.mold_details, text=f'Mold No : {self.mold_no.get()}').grid(column=0, row=0)
-            self.req_id_label = ttk.Label(self.mold_details, text=f'Request ID : {self.req_id.get()}').grid(column=1, row=0)
-            self.cust_label = ttk.Label(self.mold_details, text=f'Customer : {self.customer.get()}').grid(column=0, row=1, columnspan=2)
-            self.mc_label = ttk.Label(self.mold_details, text=f'Machine Type : {self.machine_type.get()}').grid(column=0, row=2, columnspan=2)
-            self.cav_label = ttk.Label(self.mold_details, text=f'Cavity : {self.cav_no.get()}').grid(column=0, row=3)
-            self.scope_label = ttk.Label(self.mold_details, text=f'Order Scope : {self.ord_scp.get()}').grid(column=1, row=3)
-            self.type_label = ttk.Label(self.mold_details, text=f'Order Type : {self.ord_typ.get()}').grid(column=0, row=4)
-            self.issue_to_label = ttk.Label(self.mold_details, text=f'Issue To : {self.iss_to.get()}').grid(column=1, row=4)
-            self.zc_label = ttk.Label(self.mold_details, text=f'ZC : {self.zc_var.get()}').grid(column=0, row=5)
-            self.qmc_label = ttk.Label(self.mold_details, text=f'QMC : {self.qmc_var.get()}').grid(column=1, row=5)
-            self.air_label = ttk.Label(self.mold_details, text=f'Air Eject : {self.air_ejt_var.get()}').grid(column=0, row=6)
-            self.ver_label = ttk.Label(self.mold_details, text=f'POS Ver : {self.pos_ver.get()}').grid(column=1, row=6)
-            self.country_label = ttk.Label(self.mold_details, text=f'POS Ver : {self.country.get()}').grid(column=0, row=7)
-            self.bottle_label = ttk.Label(self.mold_details, text=f'Bottle No : {self.bottle_no.get()}').grid(column=1, row=7)
-            self.malt_label = ttk.Label(self.mold_details, text=f'Molding Material : {self.malt.get()}').grid(column=0, row=8)
-            self.hrtype_label = ttk.Label(self.mold_details, text=f'HR Type : {self.hrtype.get()}').grid(column=1, row=8)
+            self.mold_no_label = ttk.Label(self.mold_details, text=f'Mold No : {self.mold_no.get()}')
+            self.mold_no_label.grid(column=0, row=0)
+            self.req_id_label = ttk.Label(self.mold_details, text=f'Request ID : {self.req_id.get()}')
+            self.req_id_label.grid(column=1, row=0)
+            self.cust_label = ttk.Label(self.mold_details, text=f'Customer : {self.customer.get()}')
+            self.cust_label.grid(column=0, row=1, columnspan=2)
+            self.mc_label = ttk.Label(self.mold_details, text=f'Machine Type : {self.machine_type.get()}')
+            self.mc_label.grid(column=0, row=2, columnspan=2)
+            self.cav_label = ttk.Label(self.mold_details, text=f'Cavity : {self.cav_no.get()}')
+            self.cav_label.grid(column=0, row=3)
+            self.scope_label = ttk.Label(self.mold_details, text=f'Order Scope : {self.ord_scp.get()}')
+            self.scope_label.grid(column=1, row=3)
+            self.type_label = ttk.Label(self.mold_details, text=f'Order Type : {self.ord_typ.get()}')
+            self.type_label.grid(column=0, row=4)
+            self.issue_to_label = ttk.Label(self.mold_details, text=f'Issue To : {self.iss_to.get()}')
+            self.issue_to_label.grid(column=1, row=4)
+            self.zc_label = ttk.Label(self.mold_details, text=f'ZC : {self.zc_var.get()}')
+            self.zc_label.grid(column=0, row=5)
+            self.qmc_label = ttk.Label(self.mold_details, text=f'QMC : {self.qmc_var.get()}')
+            self.qmc_label.grid(column=1, row=5)
+            self.air_label = ttk.Label(self.mold_details, text=f'Air Eject : {self.air_ejt_var.get()}')
+            self.air_label.grid(column=0, row=6)
+            self.ver_label = ttk.Label(self.mold_details, text=f'POS Ver : {self.pos_ver.get()}')
+            self.ver_label.grid(column=1, row=6)
+            self.country_label = ttk.Label(self.mold_details, text=f'POS Ver : {self.country.get()}')
+            self.country_label.grid(column=0, row=7)
+            self.bottle_label = ttk.Label(self.mold_details, text=f'Bottle No : {self.bottle_no.get()}')
+            self.bottle_label.grid(column=1, row=7)
+            self.malt_label = ttk.Label(self.mold_details, text=f'Molding Material : {self.malt.get()}')
+            self.malt_label.grid(column=0, row=8)
+            self.hrtype_label = ttk.Label(self.mold_details, text=f'HR Type : {self.hrtype.get()}')
+            self.hrtype_label.grid(column=1, row=8)
 
             # Configure for all widgets in Project Details frame
             for wid in self.mold_details.winfo_children():
@@ -453,17 +468,24 @@ class Planning(Toplevel):
             activity = ('Preform', 'Assembly', 'Assembly Check', 'Detailing', 'Checking', 'Correction', 'Second Check', 'Mold Issue')
 
             # Labels Heading
-            self.activity_label = ttk.Label(self.planning_details, text='Activity').grid(column=0, row=1)
-            self.yes_label = ttk.Label(self.planning_details, text='YES').grid(column=1, row=1)
-            self.no_label = ttk.Label(self.planning_details, text='NO').grid(column=2, row=1)
-            self.start_label = ttk.Label(self.planning_details, text='Start Date').grid(column=3, row=1)
-            self.day_label = ttk.Label(self.planning_details, text='Days').grid(column=4, row=1)
-            self.end_label = ttk.Label(self.planning_details, text='End Date').grid(column=5, row=1)
-            self.design_label = ttk.Label(self.planning_details, text='Designer').grid(column=6, row=1)
+            self.activity_label = ttk.Label(self.planning_details, text='Activity')
+            self.activity_label.grid(column=0, row=1)
+            self.yes_label = ttk.Label(self.planning_details, text='YES')
+            self.yes_label.grid(column=1, row=1)
+            self.no_label = ttk.Label(self.planning_details, text='NO')
+            self.no_label.grid(column=2, row=1)
+            self.start_label = ttk.Label(self.planning_details, text='Start Date')
+            self.start_label.grid(column=3, row=1)
+            self.day_label = ttk.Label(self.planning_details, text='Days')
+            self.day_label.grid(column=4, row=1)
+            self.end_label = ttk.Label(self.planning_details, text='End Date')
+            self.end_label.grid(column=5, row=1)
+            self.design_label = ttk.Label(self.planning_details, text='Designer')
+            self.design_label.grid(column=6, row=1)
 
             # Labels row
             self.Activity_combo = ttk.Combobox(self.planning_details, textvariable=self.Activity_var, values=activity, width=15)
-            self.Activity_combo.grid(column=0, row=2, sticky="W")
+            self.Activity_combo.grid(column=0, row=2)
             self.Activity_combo.bind("<<ComboboxSelected>>", fill_days)
 
             # Activity check buttons
@@ -476,24 +498,40 @@ class Planning(Toplevel):
 
             # Start date
             self.Activity_start_date = DateEntry(self.planning_details, width=12)
-            self.Activity_start_date.grid(column=3, row=2, padx=20, pady=4)
+            self.Activity_start_date.grid(column=3, row=2)
             self.Activity_start_date.entry.bind('<FocusIn>', lambda event, arg=self.Activity_start_date: get_designers(event, arg))
             self.Activity_start_date.entry.delete(first=0, last=END)
 
             # Days
-            self.Activity_day_entry = ttk.Entry(self.planning_details, textvariable=self.Activity_day, width=5).grid(column=4, row=2, padx=20, pady=4)
+            self.Activity_day_entry = ttk.Entry(self.planning_details, textvariable=self.Activity_day, width=10)
+            self.Activity_day_entry.grid(column=4, row=2)
 
             # End date
-            self.Activity_end_entry = ttk.Entry(self.planning_details, textvariable=self.Activity_end, width=10).grid(column=5, row=2)
+            self.Activity_end_entry = ttk.Entry(self.planning_details, textvariable=self.Activity_end, width=10)
+            self.Activity_end_entry.grid(column=5, row=2)
 
             # Designers data
             self.Activity_designer_entry = ttk.Entry(self.planning_details, textvariable=self.Activity_designer, width=10)
-            self.Activity_designer_entry.grid(column=6, row=2)
+            self.Activity_designer_entry.grid(column=6, row=2, sticky=W)
             self.Activity_designer_entry.bind('<1>', lambda event, arg=self.Activity_designer: sel_dsgn(event, arg))
 
+            #dummy label
+            self.dummy_label = Label(self.planning_details)
+            self.dummy_label.grid(column=0, row=3)
+
+            # frame
+            self.saperate_frame= Frame(self.planning_details)
+            self.saperate_frame.grid(column=0, row=4, columnspan=7, sticky=NSEW)
+
             # Add buttons
-            self.Activity_Button = ttk.Button(self.planning_details, text="Add", command=submit_one, width=4)
-            self.Activity_Button.grid(column=7, row=2)
+            self.update1_btn = ttk.Button(self.saperate_frame, text="Update", command=update_pre_plan, width=10)
+            self.update1_btn.pack(side='left', padx=5)
+            self.change1_btn = ttk.Button(self.saperate_frame, text="Delete", command=delete_pre_plan, width=10)
+            self.change1_btn.pack(side='left', padx=5)
+            self.Activity_Button = ttk.Button(self.saperate_frame, text="Add", command=submit_one, width=10)
+            self.Activity_Button.pack(side='right', padx=5)
+            self.re_planning_combo = ttk.Combobox(self.saperate_frame, textvariable=self.Activity_var, width=15)
+            self.re_planning_combo.pack(side='right', padx=5)
 
             for p_widgets in self.planning_details.winfo_children():
                 p_widgets.grid_configure(padx=5, pady=4)
@@ -517,19 +555,41 @@ class Planning(Toplevel):
                 # messagebox.showerror("Error", 'Select Proper Row')
                 return
 
-            self.ch_start_date.set(self.data_tree.item(selected_item)['values'][2])
-            self.ch_days.set(self.data_tree.item(selected_item)['values'][5])
-            self.ch_designer.set(self.data_tree.item(selected_item)['values'][3])
+            # self.ch_start_date.set(self.data_tree.item(selected_item)['values'][2])
+            self.Activity_var.set(self.data_tree.item(selected_item)['values'][4])
+            self.Y_var.set(1)
+            self.Activity_start_date.entry.insert(END, self.data_tree.item(selected_item)['values'][2])
+            self.Activity_day.set(self.data_tree.item(selected_item)['values'][5])
+            self.Activity_designer.set(self.data_tree.item(selected_item)['values'][3])
 
-            self.ch_start_date_label = ttk.Label(self.mold_plan_details, text='Start Date').place(x=35, y=250)
-            self.ch_start_date_entry = ttk.Entry(self.mold_plan_details, textvariable=self.ch_start_date).place(x=20, y=270, width=100)
-            self.ch_days_label = ttk.Label(self.mold_plan_details, text='No of Days').place(x=145, y=250)
-            self.ch_days_entry = ttk.Entry(self.mold_plan_details, textvariable=self.ch_days).place(x=130, y=270, width=100)
-            self.ch_designer_date_label = ttk.Label(self.mold_plan_details, text='Designer').place(x=255, y=250)
-            self.ch_designer_date_entry = ttk.Entry(self.mold_plan_details, textvariable=self.ch_designer).place(x=240, y=270, width=100)
+            date = "5"
+            # if plan date is today
+            if date == "":
+                delete_plan(self.MDShdb, self.Activity_designer.get(), self.req_id.get(), self.Activity_var.get())
+            else:
 
-            self.update1_btn = ttk.Button(self.mold_plan_details, text="Update", command=update_pre_plan).place(x=350, y=270, width=80)
-            self.change1_btn = ttk.Button(self.mold_plan_details, text="Delete", command=delete_pre_plan).place(x=450, y=270, width=80)
+                self.Activity_combo = ttk.Combobox(self.planning_details, textvariable=self.Activity_var, width=15)
+                self.Activity_combo.grid(column=0, row=3, sticky="W")
+
+                re_plan(self.MDShdb, self.Activity_designer.get(), self.req_id.get(), self.Activity_var.get())
+
+            # self.ch_start_date_label = ttk.Label(self.mold_plan_details, text='Start Date')
+            # self.ch_start_date_label.place(x=35, y=250)
+            # self.ch_start_date_entry = ttk.Entry(self.mold_plan_details, textvariable=self.ch_start_date)
+            # self.ch_start_date_entry.place(x=20, y=270, width=100)
+            # self.ch_days_label = ttk.Label(self.mold_plan_details, text='No of Days')
+            # self.ch_days_label.place(x=145, y=250)
+            # self.ch_days_entry = ttk.Entry(self.mold_plan_details, textvariable=self.ch_days)
+            # self.ch_days_entry.place(x=130, y=270, width=100)
+            # self.ch_designer_date_label = ttk.Label(self.mold_plan_details, text='Designer')
+            # self.ch_designer_date_label.place(x=255, y=250)
+            # self.ch_designer_date_entry = ttk.Entry(self.mold_plan_details, textvariable=self.ch_designer)
+            # self.ch_designer_date_entry.place(x=240, y=270, width=100)
+            #
+            # self.update1_btn = ttk.Button(self.mold_plan_details, text="Update", command=update_pre_plan)
+            # self.update1_btn.place(x=350, y=270, width=80)
+            # self.change1_btn = ttk.Button(self.mold_plan_details, text="Delete", command=delete_pre_plan)
+            # self.change1_btn.place(x=450, y=270, width=80)
 
         def update_pre_plan():
             # Update variables from tree view
@@ -825,21 +885,27 @@ class Planning(Toplevel):
 
         # Month Combobox
         month_values = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
-        self.month_Comb = ttk.Combobox(self, textvariable=self.month, width=12, values=month_values).place(x=20, y=730)
+        self.month_Comb = ttk.Combobox(self, textvariable=self.month, width=12, values=month_values)
+        self.month_Comb.place(x=20, y=730)
 
         # Heatmap Button
-        self.heatmap_btn = ttk.Button(self, text="Heatmap", command=heatmap).place(x=130, y=730)
+        self.heatmap_btn = ttk.Button(self, text="Heatmap", command=heatmap)
+        self.heatmap_btn.place(x=130, y=730)
 
         # Submit Button
-        self.submit_btn = ttk.Button(self, text="Submit", command=submit).place(x=575, y=730)
+        self.submit_btn = ttk.Button(self, text="Submit", command=submit)
+        self.submit_btn.place(x=575, y=730)
 
         # Switch Mold Information and Mold Info Button
-        self.switch_btn = ttk.Button(self, text=">", command=refresh, width=1).place(x=1225, y=730)
+        self.switch_btn = ttk.Button(self, text=">", command=refresh, width=1)
+        self.switch_btn.place(x=1225, y=730)
 
         # Designers group combobox
         mc_model_values2 = ('ASB-70DPH', 'ASB-70DPW', 'ASB-50MB', 'ASB-12M', 'PF', 'Preform', 'Modification', 'Parts Order', 'ECM')
-        self.Designer_group_label = ttk.Label(self, text='Designers Group:').place(x=250, y=735)
-        self.Designer_group_Comb = ttk.Combobox(self, textvariable=self.DegnModel, width=15, values=mc_model_values2).place(x=360, y=730)
+        self.Designer_group_label = ttk.Label(self, text='Designers Group:')
+        self.Designer_group_label.place(x=250, y=735)
+        self.Designer_group_Comb = ttk.Combobox(self, textvariable=self.DegnModel, width=15, values=mc_model_values2)
+        self.Designer_group_Comb.place(x=360, y=730)
 
         # Refresh button to update designer's tree view
         self.refresh_btn = ttk.Button(self, text="\u27F3", command=get_designers)

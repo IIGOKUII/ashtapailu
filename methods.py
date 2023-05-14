@@ -411,5 +411,75 @@ def get_mold_info(path, mold_no):
     return df_mold_info
 
 
+def delete_plan(path, designer, req_id, activity):
+    # Connect to the SQLite3 database
+    conn = sqlite3.connect(path)
+    c = conn.cursor()
+
+    try:
+        row = c.execute(f"SELECT REQ_ID FROM {designer}")
+    except sqlite3.OperationalError:
+        return
+
+    c.execute(f"DELETE FROM {req_id} WHERE REQ_ID=? AND ACTIVITY=?", (req_id, activity))
+
+    c.execute("DELETE FROM HEATMAP WHERE REQ_ID=? AND DESIGNER=? AND ACTIVITY=?", (req_id, designer, activity))
+
+    up_plan = {
+        "Preform": "P_PLAN_STATUS",
+        "Assembly": "A_PLAN_STATUS",
+        "Assembly Check": "AC_PLAN_STATUS",
+        "Detailing": "D_PLAN_STATUS",
+        "Checking": "C_PLAN_STATUS",
+        "Correction": "CR_PLAN_STATUS",
+        "Second Check": "SC_PLAN_STATUS",
+        "Issue": "I_PLAN_STATUS"
+    }
+
+    arg3 = up_plan[activity]
+
+    # Execute the update query
+    c.execute(f"UPDATE MOLD_TABLE SET {arg3}={arg3}-?,PRE_PLAN_STATUS=? WHERE REQ_ID=?", (1, 1, req_id))
+
+    conn.commit()
+    conn.close()
+
+
+def re_plan(path, designer, req_id, activity):
+    # Connect to the SQLite3 database
+    conn = sqlite3.connect(path)
+    c = conn.cursor()
+
+    try:
+        row = c.execute(f"SELECT REQ_ID FROM {designer}")
+    except sqlite3.OperationalError:
+        return
+
+    c.execute(f"UPDATE {designer} SET STATUS=? WHERE REQ_ID=? AND ACTIVITY=?",
+              (5, req_id, activity))
+
+    c.execute("UPDATE HEATMAP SET STATUS=? WHERE REQ_ID=? AND DESIGNER=? AND ACTIVITY=?",
+              (5, req_id, designer, activity))
+
+    up_plan = {
+        "Preform": "P_PLAN_STATUS",
+        "Assembly": "A_PLAN_STATUS",
+        "Assembly Check": "AC_PLAN_STATUS",
+        "Detailing": "D_PLAN_STATUS",
+        "Checking": "C_PLAN_STATUS",
+        "Correction": "CR_PLAN_STATUS",
+        "Second Check": "SC_PLAN_STATUS",
+        "Issue": "I_PLAN_STATUS"
+    }
+
+    arg3 = up_plan[activity]
+
+    # Execute the update query
+    c.execute(f"UPDATE MOLD_TABLE SET {arg3}={arg3}-?,PRE_PLAN_STATUS=? WHERE REQ_ID=?", (1, 1, req_id))
+
+    conn.commit()
+    conn.close()
+
+
 
 
