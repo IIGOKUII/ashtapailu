@@ -105,7 +105,7 @@ def get_birthday(path):
     """
     today_date = date.today()
 
-    conn = sqlite3.connect(f"{path}database/AIdesigner.db")
+    conn = sqlite3.connect(f"{path}database/AI_Designer.db")
     cur = conn.cursor()
     cur.execute("SELECT EMP_NAME FROM ADMIN WHERE strftime('%m-%d', DOB) = ?", (today_date.strftime('%m-%d'),))  # execute a simple SQL select query
     names = cur.fetchall()

@@ -28,7 +28,7 @@ class Planning(Toplevel):
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         x_cor = int((self.winfo_screenwidth() / 2) - (window_width / 2)) - 10
-        y_cor = int((self.winfo_screenheight() / 2.3) - (window_height / 2))
+        y_cor = int((self.winfo_screenheight() / 2) - (window_height / 2))- 40
 
         self.geometry(f'{window_width}x{window_height}+{x_cor}+{y_cor}')
         self.minsize(int((self.winfo_screenwidth() / 2)), window_height)
@@ -79,6 +79,7 @@ class Planning(Toplevel):
         self.ch_start_date = StringVar()
         self.ch_days = StringVar()
         self.ch_designer = StringVar()
+        self.re_plan_reason_var = StringVar()
 
         uname = shared_variable.user_name
 
@@ -87,7 +88,7 @@ class Planning(Toplevel):
             # create a dictionary of tuples with no of days as per difficulty
             mc_model_values = ('70DPH', '70DPW', '50MB', '12M', 'PF')
 
-            with open('O:/Scheduling/Mold Design Application/Final software/database/planning_days.json', 'r') as f:
+            with open(f'{self.path}database/planning_days.json', 'r') as f:
                 # Load the contents of the file as a dictionary
                 days_data = json.load(f)
 
@@ -189,13 +190,13 @@ class Planning(Toplevel):
 
             with open('O:/Scheduling/Mold Design Application/Final software/database/list.json', 'r') as f:
                 # Load the contents of the file as a dictionary
-                data = json.load(f)
+                designers_data = json.load(f)
 
             # get the required dict
             try:
-                names = data['designers'][selection]
+                names = designers_data['designers'][selection]
             except KeyError:
-                names = data['designers']['ASB-70DPH']
+                names = designers_data['designers']['ASB-70DPH']
 
             # Define the column headings for the dates
             date_columns = [(m_date + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(30)]
@@ -387,7 +388,7 @@ class Planning(Toplevel):
             # get the selected value from the combobox
             selection = self.DegnModel.get()
 
-            with open('O:/Scheduling/Mold Design Application/Final software/database/list.json', 'r') as f:
+            with open(f'{self.path}database/list.json', 'r') as f:
                 # Load the contents of the file as a dictionary
                 data = json.load(f)
 
@@ -524,14 +525,20 @@ class Planning(Toplevel):
             self.saperate_frame.grid(column=0, row=4, columnspan=7, sticky=NSEW)
 
             # Add buttons
-            self.update1_btn = ttk.Button(self.saperate_frame, text="Update", command=update_pre_plan, width=10)
+            self.update1_btn = ttk.Button(self.saperate_frame, text="Update", command=change_plan, width=10)
             self.update1_btn.pack(side='left', padx=5)
             self.change1_btn = ttk.Button(self.saperate_frame, text="Delete", command=delete_pre_plan, width=10)
             self.change1_btn.pack(side='left', padx=5)
             self.Activity_Button = ttk.Button(self.saperate_frame, text="Add", command=submit_one, width=10)
             self.Activity_Button.pack(side='right', padx=5)
-            self.re_planning_combo = ttk.Combobox(self.saperate_frame, textvariable=self.Activity_var, width=15)
-            self.re_planning_combo.pack(side='right', padx=5)
+
+            with open(f'{self.path}database/list.json', 'r') as f:
+                # Load the contents of the file as a dictionary
+                reason = json.load(f)
+
+            re_plan_reason = reason['reason']['replan']
+
+            self.re_planning_combo = ttk.Combobox(self.saperate_frame, textvariable=self.re_plan_reason_var, values=re_plan_reason, width=15)
 
             for p_widgets in self.planning_details.winfo_children():
                 p_widgets.grid_configure(padx=5, pady=4)
@@ -547,7 +554,7 @@ class Planning(Toplevel):
                 values = tuple(row_mold.values)
                 self.data_tree.insert("", "end", text=i, values=values)
 
-        def change_plan(event):
+        def change_plan():
             # Update variables from tree view
             try:
                 selected_item = self.data_tree.selection()[0]
@@ -568,8 +575,7 @@ class Planning(Toplevel):
                 delete_plan(self.MDShdb, self.Activity_designer.get(), self.req_id.get(), self.Activity_var.get())
             else:
 
-                self.Activity_combo = ttk.Combobox(self.planning_details, textvariable=self.Activity_var, width=15)
-                self.Activity_combo.grid(column=0, row=3, sticky="W")
+                self.re_planning_combo.pack(side='right', padx=5)
 
                 re_plan(self.MDShdb, self.Activity_designer.get(), self.req_id.get(), self.Activity_var.get())
 
@@ -805,15 +811,15 @@ class Planning(Toplevel):
         self.data_tree.heading('status', text='Status')
         self.data_tree.column('status', anchor=CENTER, stretch=NO, minwidth=60, width=75)
 
-        self.data_tree.bind('<<TreeviewSelect>>', change_plan)
+        # self.data_tree.bind('<<TreeviewSelect>>', change_plan)
 
         # Mold plan details
         self.mold_plan_details = Frame(self, bd=0, bg='red')
         self.mold_plan_details.place(x=680, y=300, width=575, height=400)
 
         # //New mold tree view - nothing is planned// #
-        # data = get_new_entry(self.MDShdb)
-        data = '1'
+        data = get_new_entry(self.MDShdb)
+        # data = '1'
 
         self.new_entry_label = ttk.LabelFrame(self.mold_plan_details, text=f"New Mold : {len(data)}")
         self.new_entry_label.place(x=0, y=0, width=185, height=400)
@@ -836,8 +842,8 @@ class Planning(Toplevel):
             self.new_entry_tree.insert('', END, values=row)
 
         # //Short Plan tree view - some activity is planned// #
-        # short_plan_data = get_short_plan(self.MDShdb)
-        short_plan_data = '1'
+        short_plan_data = get_short_plan(self.MDShdb)
+        # short_plan_data = '1'
 
         self.short_plan_details = ttk.LabelFrame(self.mold_plan_details, text=f"Short Plan : {len(short_plan_data)}")
         self.short_plan_details.place(x=195, y=0, width=185, height=400)
@@ -860,8 +866,8 @@ class Planning(Toplevel):
             self.short_plan_tree.insert('', END, values=row)
 
         # //Complete Plan// #
-        # complete_plan = get_complete_plan(self.MDShdb)
-        complete_plan = '1'
+        complete_plan = get_complete_plan(self.MDShdb)
+        # complete_plan = '1'
 
         self.complete_plan_details = ttk.LabelFrame(self.mold_plan_details, text=f"Complete Plan : {len(complete_plan)}")
         self.complete_plan_details.place(x=390, y=0, width=185, height=400)

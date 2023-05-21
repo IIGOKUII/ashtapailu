@@ -224,21 +224,21 @@ class App(ttk.Frame):
         if department == "Container Design":
             messagebox.showinfo("Successful!", "Login successful to Container Design.")
             new_win = container_design_home_page.ContainerDesignHome()
-            root.withdraw()  # hide the login window
+            root.iconify()  # hide the login window
             new_win.wait_window()  # wait for the new window to be closed
-            root.destroy()  # destroy the login window
+            # root.destroy()  # destroy the login window
         elif department == "Mold Design":
             messagebox.showinfo("Successful!", "Login successful to Mold Design.")
             new_win = mold_home_page.MoldDesignHome()
-            root.withdraw()  # hide the login window
+            root.iconify()  # hide the login window
             new_win.wait_window()  # wait for the new window to be closed
-            root.destroy()  # destroy the login window
+            # root.destroy()  # destroy the login window
         else:
             messagebox.showerror("Error!", "If difficulty in login then please contact admin.")
 
     @staticmethod
-    def redirect_forgot_window():
-        forgotpass_page.ForgotPass()
+    # def redirect_forgot_window():
+    #     forgotpass_page.ForgotPass()
 
     @staticmethod
     def close_win():
